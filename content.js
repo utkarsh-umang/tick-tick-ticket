@@ -1,23 +1,13 @@
-const minInterval = 1000; // 1 second
-const maxInterval = 2000; // 2 seconds
-
-let currentState = 'INITIAL';
-let lastRunTimestamp = 0;
-
-function getRandomInterval() {
-  return Math.floor(Math.random() * (maxInterval - minInterval + 1) + minInterval);
-}
-
 function clickBookTickets() {
   const bookButtons = Array.from(document.querySelectorAll('button')).filter(button => 
     button.textContent.toLowerCase().includes('book'));
   if (bookButtons.length > 0) {
     bookButtons[0].click();
     console.log('Clicked Book Tickets button');
-    currentState = 'WAITING_FOR_DATE_PAGE';
-  } else {
-    console.log('Book Tickets button not found');
+    return true;
   }
+  console.log('Book Tickets button not found');
+  return false;
 }
 
 function selectDate() {
@@ -26,10 +16,10 @@ function selectDate() {
   if (dateTicketButton) {
     dateTicketButton.click();
     console.log('Date selected');
-    currentState = 'WAITING_FOR_CONTINUE';
-  } else {
-    console.log('Date selector not found');
+    return true;
   }
+  console.log('Date selector not found');
+  return false;
 }
 
 function clickContinue() {
@@ -38,38 +28,32 @@ function clickContinue() {
   if (continueButtons.length > 0 && !continueButtons[0].disabled) {
     continueButtons[0].click();
     console.log('Clicked Continue button');
-    currentState = 'COMPLETED';
-  } else {
-    console.log('Continue button not found or disabled');
+    return true;
   }
+  console.log('Continue button not found or disabled');
+  return false;
 }
 
-function runAutomation(timestamp) {
-  if (timestamp - lastRunTimestamp > getRandomInterval()) {
-    console.log('Current state:', currentState);
-    switch (currentState) {
-      case 'INITIAL':
-        if (window.location.href.includes('/events') && !window.location.href.includes('/booking-step')) {
-          clickBookTickets();
-        }
-        break;
-      case 'WAITING_FOR_DATE_PAGE':
-        if (window.location.href.includes('/booking-step/datetime') || window.location.href.includes('/booking-step')) {
-          selectDate();
-        }
-        break;
-      case 'WAITING_FOR_CONTINUE':
-        clickContinue();
-        break;
-      case 'COMPLETED':
-        console.log('Booking process completed');
-        return; // Stop the automation
-    }
-    lastRunTimestamp = timestamp;
-  }
+function runAutomation() {
+  console.log('Running automation');
   
-  requestAnimationFrame(runAutomation);
+  if (window.location.href.includes('/events') && !window.location.href.includes('/booking-step')) {
+    clickBookTickets();
+  } else if (window.location.href.includes('/booking-step/datetime') || window.location.href.includes('/booking-step')) {
+    if (selectDate()) {
+      // If date selection was successful, try to click continue
+      setTimeout(clickContinue, 1000); // Wait a bit for any page updates
+    }
+  } else {
+    console.log('Unknown page state');
+  }
 }
 
-console.log('Starting automation');
-requestAnimationFrame(runAutomation);
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  if (request.action === "runAutomation") {
+    runAutomation();
+  }
+});
+
+// Run automation once when the script loads
+runAutomation();
