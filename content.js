@@ -27,7 +27,7 @@ function selectDate() {
 function clickContinue() {
   const continueButtons = Array.from(document.querySelectorAll('button')).filter(button => 
     button.textContent.toLowerCase().includes('continue'));
-  if (continueButtons.length > 0 && !continueButtons[0].disabled) {
+  if (continueButtons.length > 0) {
     continueButtons[0].click();
     console.log('Clicked Continue button');
     return true;
@@ -38,7 +38,7 @@ function clickContinue() {
 
 function runAutomation(url) {
   console.log('Running automation on URL:', url);
-  
+
   if (!isBookingStarted && url.includes('/events') && !url.includes('/booking-step')) {
     if (clickBookTickets()) {
       chrome.runtime.sendMessage({ action: "startRefreshing" });
@@ -50,7 +50,7 @@ function runAutomation(url) {
       console.log('Booking started, stopped refreshing');
     }
     if (selectDate()) {
-      setTimeout(clickContinue, 1000); // Wait a bit
+      setTimeout(clickContinue, 1000);
     }
   } else {
     console.log('Unknown page state');

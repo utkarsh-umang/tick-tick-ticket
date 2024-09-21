@@ -1,18 +1,22 @@
-let isRefreshing = false;
+let tabsRefreshing = {};
 let refreshInterval = 5000;
 
 function startRefreshing(tabId) {
-  isRefreshing = true;
-  refreshTab(tabId);
+  if (!tabsRefreshing[tabId]) {
+    tabsRefreshing[tabId] = true;
+    refreshTab(tabId);
+  }
 }
 
-function stopRefreshing() {
-  isRefreshing = false;
+function stopRefreshing(tabId) {
+  if (tabsRefreshing[tabId]) {
+    tabsRefreshing[tabId] = false;
+  }
 }
 
 function refreshTab(tabId) {
-  if (!isRefreshing) return;
-  
+  if (!tabsRefreshing[tabId]) return;
+
   chrome.tabs.reload(tabId, {}, () => {
     setTimeout(() => refreshTab(tabId), refreshInterval);
   });
@@ -22,7 +26,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === "startRefreshing") {
     startRefreshing(sender.tab.id);
   } else if (request.action === "stopRefreshing") {
-    stopRefreshing();
+    stopRefreshing(sender.tab.id);
   }
 });
 
