@@ -17,7 +17,7 @@ function clickBookTickets() {
 function selectDate() {
   // Find all buttons and filter those that contain '6:00 PM' in their text
   const timeButtons = Array.from(document.querySelectorAll('button')).filter(button => 
-    button.textContent.includes('6:00 PM')); // Change if the button text is different 
+    button.textContent.includes('PM')); // Change if the button text is different 
   if (timeButtons.length > 1) { // Check if there's more than one 6:00 PM button detected
     timeButtons[1].click(); // Click on the second 6:00 PM button for 19th January
     console.log('Selected second 6:00 PM (For 19th January)');
