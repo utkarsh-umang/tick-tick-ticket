@@ -13,14 +13,20 @@ function clickBookTickets() {
 }
 
 function selectDate() {
-  const dateTicketButton = Array.from(document.querySelectorAll('li')).find(li => 
-    li.textContent.trim() === 'Sunday Tickets');
-  if (dateTicketButton) {
-    dateTicketButton.click();
-    console.log('Date selected');
+  const timeButtons = Array.from(document.querySelectorAll('button')).filter(button => 
+    button.textContent.includes('6:00 PM')); // Finds all buttons with '6:00 PM'
+
+  if (timeButtons.length > 1) { // Ensure there's more than one matching button
+    timeButtons[1].click(); // Click on the second 6:00 PM button for 19th January
+    console.log('Selected second 6:00 PM (For 19th January)');
+    return true;
+  } else if (timeButtons.length > 0) {
+    // Fall back to clicking the first one, just in case
+    timeButtons[0].click();
+    console.log('Only one 6:00 PM found, clicking it');
     return true;
   }
-  console.log('Date selector not found');
+  console.log('No 6:00 PM buttons found');
   return false;
 }
 
