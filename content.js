@@ -1,8 +1,10 @@
-let isBookingStarted = false;
+let isBookingStarted = false; // Flag to track if booking process has started
 
 function clickBookTickets() {
+  // Find all buttons and filter those that contain 'book' in their text (case-insensitive)
   const bookButtons = Array.from(document.querySelectorAll('button')).filter(button => 
-    button.textContent.toLowerCase().includes('book'));
+    button.textContent.toLowerCase().includes('book')); // Change if the button text is different
+  // If a "Book Tickets" button is found, click it
   if (bookButtons.length > 0) {
     bookButtons[0].click();
     console.log('Clicked Book Tickets button');
@@ -13,10 +15,10 @@ function clickBookTickets() {
 }
 
 function selectDate() {
+  // Find all buttons and filter those that contain '6:00 PM' in their text
   const timeButtons = Array.from(document.querySelectorAll('button')).filter(button => 
-    button.textContent.includes('6:00 PM')); // Finds all buttons with '6:00 PM'
-
-  if (timeButtons.length > 1) { // Ensure there's more than one matching button
+    button.textContent.includes('6:00 PM')); // Change if the button text is different 
+  if (timeButtons.length > 1) { // Check if there's more than one 6:00 PM button detected
     timeButtons[1].click(); // Click on the second 6:00 PM button for 19th January
     console.log('Selected second 6:00 PM (For 19th January)');
     return true;
@@ -31,8 +33,10 @@ function selectDate() {
 }
 
 function clickContinue() {
+  // Find all buttons and filter those that contain 'continue' in their text
   const continueButtons = Array.from(document.querySelectorAll('button')).filter(button => 
-    button.textContent.toLowerCase().includes('continue'));
+    button.textContent.toLowerCase().includes('continue')); // Change if the button text is different after selecting the Date
+  // If a "Continue" button is found, click it
   if (continueButtons.length > 0) {
     continueButtons[0].click();
     console.log('Clicked Continue button');
@@ -45,16 +49,22 @@ function clickContinue() {
 function runAutomation(url) {
   console.log('Running automation on URL:', url);
 
-  if (!isBookingStarted && url.includes('/events') && !url.includes('/booking-step')) {
+  // If the URL is on the events page but not in the booking step
+  if (url.includes('/events') && !url.includes('/booking-step')) { // Change the URL pattern as per the platform
     if (clickBookTickets()) {
+      // If "Book Tickets" button was clicked, stop refreshing
+      chrome.runtime.sendMessage({ action: "stopRefreshing" });
+    } else {
+      // If "Book Tickets" button was not clicked, keep refreshing
       chrome.runtime.sendMessage({ action: "startRefreshing" });
     }
   } else if (url.includes('/booking-step')) {
+    // If the URL is in the booking step
     if (!isBookingStarted) {
       isBookingStarted = true;
-      chrome.runtime.sendMessage({ action: "stopRefreshing" });
-      console.log('Booking started, stopped refreshing');
+      console.log('Booking started');
     }
+    // Select the date and time, then click continue after a delay
     if (selectDate()) {
       setTimeout(clickContinue, 1000);
     }
