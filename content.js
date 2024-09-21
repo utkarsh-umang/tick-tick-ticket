@@ -1,3 +1,5 @@
+let isBookingStarted = false;
+
 function clickBookTickets() {
   const bookButtons = Array.from(document.querySelectorAll('button')).filter(button => 
     button.textContent.toLowerCase().includes('book'));
@@ -34,15 +36,21 @@ function clickContinue() {
   return false;
 }
 
-function runAutomation() {
-  console.log('Running automation');
+function runAutomation(url) {
+  console.log('Running automation on URL:', url);
   
-  if (window.location.href.includes('/events') && !window.location.href.includes('/booking-step')) {
-    clickBookTickets();
-  } else if (window.location.href.includes('/booking-step/datetime') || window.location.href.includes('/booking-step')) {
+  if (!isBookingStarted && url.includes('/events') && !url.includes('/booking-step')) {
+    if (clickBookTickets()) {
+      chrome.runtime.sendMessage({ action: "startRefreshing" });
+    }
+  } else if (url.includes('/booking-step')) {
+    if (!isBookingStarted) {
+      isBookingStarted = true;
+      chrome.runtime.sendMessage({ action: "stopRefreshing" });
+      console.log('Booking started, stopped refreshing');
+    }
     if (selectDate()) {
-      // If date selection was successful, try to click continue
-      setTimeout(clickContinue, 1000); // Wait a bit for any page updates
+      setTimeout(clickContinue, 1000); // Wait a bit
     }
   } else {
     console.log('Unknown page state');
@@ -51,9 +59,8 @@ function runAutomation() {
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === "runAutomation") {
-    runAutomation();
+    runAutomation(request.url);
   }
 });
 
-// Run automation once when the script loads
-runAutomation();
+runAutomation(window.location.href);
